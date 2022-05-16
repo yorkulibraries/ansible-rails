@@ -1,0 +1,182 @@
+---
+- name: Add a Rails app server 
+  hosts: rails_app_servers,vagrant
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+  - name: add yarn repo key
+    apt_key:
+      url: https://dl.yarnpkg.com/debian/pubkey.gpg
+      state: present
+
+  - name: Add specified repository into sources list
+    apt_repository:
+      repo: deb https://dl.yarnpkg.com/debian/ stable main
+      state: present
+
+  - name: install prerequisite
+    apt:
+      pkg:
+      - git 
+      - curl 
+      - libssl-dev 
+      - libreadline-dev 
+      - zlib1g-dev
+      - autoconf
+      - bison
+      - build-essential
+      - libyaml-dev
+      - libreadline-dev
+      - libncurses5-dev
+      - libffi-dev
+      - libgdbm-dev
+      - libmagickwand-dev
+      - imagemagick
+      - apache2
+      - libmysqlclient-dev
+      - mysql-client
+      - libsqlite3-dev
+      - nodejs
+      - yarn
+      - python-pexpect
+
+
+  - name: create user primary group
+    group:
+      name: "{{ app }}"
+      gid: "{{ puma_port }}"
+      state: present
+
+  - name: create user
+    user:
+      name: "{{ app }}" 
+      group: "{{ app }}" 
+      comment: "{{ app }}"
+      uid: "{{ puma_port }}"
+      shell: /bin/bash
+      createhome: yes
+      home: "/home/{{ app }}"
+      state: present
+
+  - name: copy /etc/skel/.bash_aliases to user home directory
+    copy:
+      src: /etc/skel/.bash_aliases
+      remote_src: yes
+      dest: "/home/{{ app }}"
+      owner: "{{ app }}"
+      group: "{{ app }}"
+      force: no
+
+  - block:
+    - name: add SSH pubkeys
+      authorized_key:
+        user: "{{ app }}"
+        key: "{{ lookup('file', 'sshkeys/{{ item.name }}') }}"
+      with_items: "{{ users_to_create|default([]) }}"
+
+    - name: check if rbenv installed
+      stat:
+        path: /home/{{ app }}/.rbenv/bin/rbenv
+      register: rbenv
+
+    - name: install rbenv
+      shell: "curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash"
+      when: rbenv.stat.exists == False
+
+    - name: setup rbenv PATH for the user "{{ app }}"
+      lineinfile:
+        path: /home/{{ app }}/.profile
+        line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+        state: present
+
+    - name: setup rbenv command for the user "{{ app }}"
+      lineinfile:
+        path: /home/{{ app }}/.profile
+        line: 'eval "$(rbenv init -)"'
+        state: present
+
+    - name: create ~/.gemrc for user "{{ app }}"
+      lineinfile:
+        path: /home/{{ app }}/.gemrc
+        line: 'gem: --no-document'
+        state: present
+        create: yes
+
+    - name: create ~/.bundle
+      file:
+        path: /home/{{ app }}/.bundle
+        state: directory
+
+    - name: create ~/.bundle/config for user "{{ app }}"
+      lineinfile:
+        path: /home/{{ app }}/.bundle/config
+        line: 'BUNDLE_WITHOUT: "development:test"'
+        state: present
+        create: yes
+
+
+    - name: install required ruby version "{{ ruby_version }}"
+      shell: . /home/{{ app }}/.profile ; rbenv install -s "{{ ruby_version }}"
+      register: rbenv_install
+      changed_when: rbenv_install.stderr is search('Installed ruby')
+      failed_when: rbenv_install.stderr is search('BUILD FAILED')
+
+    - name: get current global ruby version
+      shell: . /home/{{ app }}/.profile ; rbenv global
+      register: rbenv_version
+      changed_when: False
+
+    - name: set global ruby version to "{{ ruby_version }}" 
+      shell: . /home/{{ app }}/.profile ; rbenv global "{{ ruby_version }}"
+      register: rbenv_global
+      changed_when: not rbenv_version.stdout is search(ruby_version)
+      failed_when: rbenv_global.stderr | length > 0
+
+    - name: unset local ruby version
+      file:
+        path: /home/{{ app }}/.ruby-version
+        state: absent
+
+    become: yes
+    become_user: "{{ app }}"
+    
+
+  - name: create apache conf /etc/apache2/sites-available/sitename.conf
+    template:
+      src: etc/apache2/sites-available/rails_app_template.conf
+      dest: "/etc/apache2/sites-available/{{ app }}.library.yorku.ca.conf"
+      owner: root
+      group: root
+      force: yes
+
+  - name: enable mod_proxy_http
+    community.general.apache2_module:
+      state: present
+      name: proxy_http
+    notify: restart apache2 
+
+  - name: enable apache site
+    file:
+      src: "/etc/apache2/sites-available/{{ app }}.library.yorku.ca.conf"
+      dest: "/etc/apache2/sites-enabled/{{ app }}.library.yorku.ca.conf"
+      owner: root
+      group: root
+      state: link
+    notify: restart apache2 
+
+  - name: create puma systemd unit file
+    template:
+      src: etc/systemd/system/rails_app_template.service
+      dest: "/etc/systemd/system/{{ app }}.service"
+      owner: root
+      group: root
+      force: yes
+
+  handlers:
+  - name: restart apache2
+    systemd:
+      state: restarted
+      name: apache2
+

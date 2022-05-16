@@ -1,0 +1,45 @@
+[Unit]
+Description=Puma {{ app }} Server
+After=network.target
+
+[Service]
+# Foreground process (do not use --daemon in ExecStart or config.rb)
+Type=simple
+
+# Preferably configure a non-privileged user
+User={{ app }}
+
+# The path to the your application code root directory
+WorkingDirectory=/home/{{ app }}/{{ app }}
+
+Environment=RAILS_ENV=production PORT={{ puma_port }} RAILS_SERVE_STATIC_FILES=true
+
+# create pids dir
+ExecStartPre=-/bin/mkdir -p /home/{{ app }}/{{ app }}/tmp/pids 
+
+# Precompile assets before starting
+{% if no_asset_precompile is defined %}
+#ExecStartPre=/home/{{ app }}/.rbenv/shims/bundle exec rake assets:precompile 
+{% else %}
+ExecStartPre=/home/{{ app }}/.rbenv/shims/bundle exec rake assets:precompile 
+{% endif %}
+
+# The command to start Puma
+ExecStart=/home/{{ app }}/.rbenv/shims/bundle exec puma -C /home/{{ app }}/{{ app }}/config/puma.rb
+
+# The command to stop Puma
+ExecStop=/home/{{ app }}/.rbenv/shims/bundle exec puma -S /home/{{ app }}/{{ app }}/config/puma.rb
+
+# Path to PID file so that systemd knows which is the master process
+PIDFile=/home/{{ app }}/{{ app }}/tmp/pids/puma.pid
+
+# Should systemd restart puma?
+# Use "no" (the default) to ensure no interference when using
+# stop/start/restart via `pumactl`.  The "on-failure" setting might
+# work better for this purpose, but you must test it.
+# Use "always" if only `systemctl` is used for start/stop/restart, and
+# reconsider if you actually need the forking config.
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
