@@ -117,6 +117,15 @@
         state: present
         create: yes
 
+    - name: determine latest installable ruby version
+      shell: . /home/{{ app }}/.profile ; rbenv install -l | grep -v - | tail -1
+      register: rbenv_latest_available
+      changed_when: false
+      when: ruby_version is not defined
+
+    - name: choose latest installable ruby
+      set_fact: ruby_version="{{ rbenv_latest_available.stdout }}"
+      when: ruby_version is not defined
 
     - name: install required ruby version "{{ ruby_version }}"
       shell: . /home/{{ app }}/.profile ; rbenv install -s "{{ ruby_version }}"
