@@ -70,11 +70,12 @@
       force: no
 
   - block:
+
     - name: add SSH pubkeys
       authorized_key:
         user: "{{ app }}"
-        key: "{{ lookup('file', 'sshkeys/{{ item.name }}') }}"
-      with_items: "{{ users_to_create|default([]) }}"
+        key: "{{ lookup('file', '{{ item }}') }}"
+      with_fileglob: sshkeys/*
 
     - name: check if rbenv installed
       stat:
