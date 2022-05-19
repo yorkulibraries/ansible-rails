@@ -1,6 +1,6 @@
 ---
 - name: Add a Rails app server 
-  hosts: rails_app_servers,vagrant
+  hosts: rails_app_servers,vagrant*
   become: yes
   gather_facts: yes
 
