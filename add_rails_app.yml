@@ -153,7 +153,7 @@
     become_user: "{{ app }}"
     
 
-  - name: create apache conf /etc/apache2/sites-available//{{ app }}.{{ app_domain }}.conf
+  - name: create apache conf /etc/apache2/sites-available/{{ app }}.{{ app_domain }}.conf
     template:
       src: etc/apache2/sites-available/rails_app_template.conf
       dest: "/etc/apache2/sites-available/{{ app }}.{{ app_domain }}.conf"
