@@ -153,10 +153,10 @@
     become_user: "{{ app }}"
     
 
-  - name: create apache conf /etc/apache2/sites-available/sitename.conf
+  - name: create apache conf /etc/apache2/sites-available//{{ app }}.{{ app_domain }}.conf
     template:
       src: etc/apache2/sites-available/rails_app_template.conf
-      dest: "/etc/apache2/sites-available/{{ app }}.library.yorku.ca.conf"
+      dest: "/etc/apache2/sites-available/{{ app }}.{{ app_domain }}.conf"
       owner: root
       group: root
       force: yes
@@ -169,8 +169,8 @@
 
   - name: enable apache site
     file:
-      src: "/etc/apache2/sites-available/{{ app }}.library.yorku.ca.conf"
-      dest: "/etc/apache2/sites-enabled/{{ app }}.library.yorku.ca.conf"
+      src: "/etc/apache2/sites-available/{{ app }}.{{ app_domain }}.conf"
+      dest: "/etc/apache2/sites-enabled/{{ app }}.{{ app_domain }}.conf"
       owner: root
       group: root
       state: link
