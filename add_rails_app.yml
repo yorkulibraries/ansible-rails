@@ -116,6 +116,7 @@
         line: 'BUNDLE_WITHOUT: "development:test"'
         state: present
         create: yes
+      when: rails_env == 'production'
 
     - name: determine latest installable ruby version
       shell: . /home/{{ app }}/.profile ; rbenv install -l | grep -v - | tail -1
