@@ -1,10 +1,10 @@
 [Unit]
 Description=Puma {{ app }} Server
-After=network.target
+After=multi-user.target
 
 [Service]
 # Foreground process (do not use --daemon in ExecStart or config.rb)
-Type=simple
+Type=idle
 
 # Preferably configure a non-privileged user
 User={{ app }}
@@ -40,6 +40,5 @@ PIDFile=/home/{{ app }}/{{ app }}/tmp/pids/puma.pid
 # Use "always" if only `systemctl` is used for start/stop/restart, and
 # reconsider if you actually need the forking config.
 Restart=always
+RestartSec=15
 
-[Install]
-WantedBy=multi-user.target
