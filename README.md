@@ -1,5 +1,10 @@
 # Playbooks to help deploying Rails app
 
+### Install requirements
+
+```
+ansible-galaxy install -r requirements.yml
+```
 
 ### Setup a new Rails application 
 As a convention, we use ports 3001-3999 for our Rails application because Puma by default is running on port 3000. For each application, you will need to make sure that the port is free. In addition, we will also use the port as the UID/GID for the user of the application, you will also need to ensure that the UID/GID is not in used. The app name will be used as the username and primary group name, and the application will be in /home/app/app.
