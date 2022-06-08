@@ -6,7 +6,7 @@
 ansible-galaxy install -r requirements.yml
 ```
 
-### Setup a new Rails application 
+### Setup the server to run a new Rails application 
 As a convention, we use ports 3001-3999 for our Rails application because Puma by default is running on port 3000. For each application, you will need to make sure that the port is free. In addition, we will also use the port as the UID/GID for the user of the application, you will also need to ensure that the UID/GID is not in used. The app name will be used as the username and primary group name, and the application will be in /home/app/app.
 
 This example shows how to create a new Rails application using Rbenv, Puma and systemd.
@@ -18,27 +18,15 @@ ansible-playbook add_rails_app.yml -e "app=fooapp puma_port=3001 ruby_version=3.
 
 Once the setup is complete, you can login to the server as user fooapp to create your new Rails app. Your pubkey should have already been added to /home/fooapp/.ssh/authorized_keys.
 
-```
-ssh fooapp@demos
-fooapp@demos:~$ gem install rails
-fooapp@demos:~$ rails new fooapp
-```
+Now your server is setup and ready for you to run your Rails application on it.
 
-Your Rails app will be in /home/fooapp/fooapp directory, test that the application would run:
+### Install a Rails app from git repo
+
+Suppose you have prepared your server to run the new Rails app as above, and you have created a blank MySQL database for the app already. You can install the new app using the following playbook.
 
 ```
-fooapp@demos:~$ cd /home/fooapp/fooapp
-fooapp@demos:~/fooapp$ rails server -e production -p 3001
+ansible-playbook -i inventory install_rails_app.yml -e"app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git rails_env=production mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=mysqlhost mysql_port=3306" --limit targethost
 ```
-
-
-
-If all is well, you can start the application as a systemd unit as followed:
-```
-sudo systemctl start fooapp
-sudo systemctl status fooapp
-```
-You should be able to open your browser to http://fooapp.myapp.ca/ to see the app running.
 
 ### Update an existing Rails app 
 Assuming you have deployed an app **fooapp** using the above method, and the git branch used is **master**.
