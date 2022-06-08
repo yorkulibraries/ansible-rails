@@ -53,6 +53,14 @@
       notify: restart app
     - debug: var=db_migrate.stdout_lines
 
+    - name: rake assets:precompile
+      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake assets:precompile
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_assets_precompile
+      notify: restart app
+    - debug: var=rake_assets_precompile.stderr_lines
+
     become: yes
     become_user: "{{ app }}"
 

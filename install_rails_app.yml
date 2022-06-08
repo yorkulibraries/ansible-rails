@@ -66,11 +66,12 @@
       notify: restart app
 
     - name: rake assets:precompile
-      shell: RAILS_ENV={{ rails_env  | default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:seed
+      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake assets:precompile
       args:
         chdir: /home/{{ app }}/{{ app }}
       register: rake_assets_precompile
       notify: restart app
+    - debug: var=rake_assets_precompile.stderr_lines
 
     - name: RAILS_ENV=development rake secret 
       shell: RAILS_ENV=development /home/{{ app }}/.rbenv/shims/bundle exec rake secret
