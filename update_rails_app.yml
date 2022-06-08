@@ -1,0 +1,65 @@
+---
+- name: Update a Rails app
+  hosts: rails_app_servers
+  become: yes
+  gather_facts: yes
+
+
+  vars_prompt:
+    - name: "githubuser"
+      prompt: "Enter your github username"
+      private: no
+    - name: "githubpass"
+      prompt: "Enter your github personal access token"
+      private: yes
+
+  tasks:
+
+  - block:
+    - name: determine the branch that has been checked out
+      shell: git status|head -1|cut -d" " -f3
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: app_branch
+      changed_when: false
+
+    - name: update (git pull) app from git repo
+      expect:
+        chdir: '/home/{{ app }}/{{ app }}'
+        command: 'git pull'
+        responses:
+          Username: "{{ githubuser }}"
+          Password: "{{ githubpass }}"
+      register: git_pull
+      when: app_branch.stdout == repo_branch|default('master')
+      changed_when: git_pull.stdout != 'Already up to date.'
+      notify: restart app
+
+    - name: bundle install 
+      shell: /home/{{ app }}/.rbenv/shims/bundle install
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: bundle_install
+      changed_when: bundle_install.stdout is search('Installing')
+      failed_when: bundle_install.stdout is search('Could not')
+
+    - name: bundle exec rake db:migrate
+      shell: RAILS_ENV=production /home/{{ app }}/.rbenv/shims/bundle exec rake db:migrate
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: db_migrate
+      changed_when: db_migrate.stdout is search('migrating')
+      failed_when: db_migrate.stdout is search('Error')
+      notify: restart app
+    - debug: var=db_migrate.stdout_lines
+
+    become: yes
+    become_user: "{{ app }}"
+
+    ### end of block
+
+  handlers:
+  - name: restart app
+    systemd:
+      name: '{{ app }}'
+      state: restarted
