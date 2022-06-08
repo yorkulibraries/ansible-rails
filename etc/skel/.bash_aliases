@@ -7,6 +7,6 @@ alias cp='cp -i'
 alias df='df -h'
 alias dmesg='dmesg -T'
 export PAGER=less
-export LESS="MPMF< -->p< (q=Quit,f=Forward,u=Up,h=Help)>" #  less prompt
+export LESS="RMPMF< -->p< (q=Quit,f=Forward,u=Up,h=Help)>" #  less prompt
 export EDITOR=vi
 
