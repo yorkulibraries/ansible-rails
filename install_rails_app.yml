@@ -1,0 +1,153 @@
+---
+- name: Deploy a Rails app
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+  - block:
+
+    - name: stat "/home/{{ app }}/{{ app }}/config/secrets.yml" 
+      stat:
+        path: "/home/{{ app }}/{{ app }}/config/secrets.yml"
+      register: app_secrets_yml
+
+    - name: git clone app from git repo
+      git:
+        repo: "{{ repo }}"
+        dest: /home/{{ app }}/{{ app }}
+        single_branch: yes
+        version: master
+      when: rails_env == 'production' and not app_secrets_yml.stat.exists
+
+    - name: gem install bundler
+      shell: /home/{{ app }}/.rbenv/shims/gem install bundler 
+      register: gem_install_bundler
+      changed_when: gem_install_bundler.stdout is search('Fetching')
+
+    - name: bundle install --without development test
+      shell: /home/{{ app }}/.rbenv/shims/bundle install --without development test
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: bundle_install
+      changed_when: bundle_install.stdout is search('Installing')
+      failed_when: bundle_install.stdout is search('Could not')
+      when: rails_env == 'production'
+
+    - name: bundle install --with development test
+      shell: /home/{{ app }}/.rbenv/shims/bundle install --with development test
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: bundle_install
+      changed_when: bundle_install.stdout is search('Installing')
+      failed_when: bundle_install.stdout is search('Could not')
+      when: rails_env == 'development'
+
+    - name: create database.yml
+      template:
+        src: templates/database.yml
+        dest: "/home/{{ app }}/{{ app }}/config/database.yml"
+
+    - name: rake db:migrate
+      shell: RAILS_ENV={{ rails_env | default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:migrate
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_db_migrate
+      when: not app_secrets_yml.stat.exists or (rails_env == 'development' or rails_env == 'test')
+      notify: restart app
+
+    - name: rake db:seed
+      shell: RAILS_ENV={{ rails_env  | default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:seed
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_db_seed
+      when: not app_secrets_yml.stat.exists or (rails_env == 'development' or rails_env == 'test')
+      notify: restart app
+
+    - name: rake assets:precompile
+      shell: RAILS_ENV={{ rails_env  | default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:seed
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_assets_precompile
+      notify: restart app
+    - debug: var=rake_assets_precompile.stdout_lines
+
+    - name: RAILS_ENV=development rake secret 
+      shell: RAILS_ENV=development /home/{{ app }}/.rbenv/shims/bundle exec rake secret
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_secret_development
+      when: not app_secrets_yml.stat.exists
+
+    - name: RAILS_ENV=production rake secret
+      shell: RAILS_ENV=production /home/{{ app }}/.rbenv/shims/bundle exec rake secret
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_secret_production
+      when: not app_secrets_yml.stat.exists
+
+    - name: RAILS_ENV=test rake secret
+      shell: RAILS_ENV=test /home/{{ app }}/.rbenv/shims/bundle exec rake secret
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_secret_test
+      when: not app_secrets_yml.stat.exists
+
+    - name: create secrets.yml
+      template:
+        src: templates/secrets.yml
+        dest: "/home/{{ app }}/{{ app }}/config/secrets.yml"
+      when: not app_secrets_yml.stat.exists
+      notify: start app
+
+    become: yes
+    become_user: "{{ app }}"
+
+  - name: Enable the Apache2 mod_rewrite
+    community.general.apache2_module:
+      state: present
+      name: rewrite
+      ignore_configcheck: yes
+    notify: restart apache2
+
+  - name: Enable the Apache2 mod_headers
+    community.general.apache2_module:
+      state: present
+      name: headers
+      ignore_configcheck: yes
+    notify: restart apache2
+
+  - name: set RAILS_ENV in /home/{{ app }}/.profile
+    lineinfile:
+      dest: /home/{{ app }}/.profile
+      regex: '^export RAILS_ENV='
+      line: "export RAILS_ENV={{ rails_env | default('development') }}"
+      state: present
+
+  - name: enable {{ app }} service on boot
+    systemd:
+      name: "{{ app }}"
+      enabled: yes
+      masked: no
+
+
+  handlers:
+  - name: restart apache2
+    systemd:
+      name: apache2
+      state: restarted
+      enabled: yes
+
+  - name: restart app
+    systemd:
+      name: "{{ app }}"
+      state: restarted
+      enabled: yes
+
+  - name: start app
+    systemd:
+      name: "{{ app }}"
+      state: started
+      enabled: yes
+
