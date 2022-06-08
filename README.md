@@ -35,3 +35,9 @@ sudo systemctl status fooapp
 ```
 You should be able to open your browser to http://fooapp.myapp.ca/ to see the app running.
 
+### Update an existing Rails app 
+Assuming you have deployed an app **fooapp** using the above method, and the git branch used is **master**.
+
+```
+ansible-playbook -i inventory update_rails_app.yml -e"app=fooapp repo_branch=master" --limit targethost
+```
