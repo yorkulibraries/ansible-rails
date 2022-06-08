@@ -8,7 +8,7 @@ This example shows how to create a new Rails application using Rbenv, Puma and s
 The add_rails_app.yml playbook will create a user fooapp with uid/gid: 3001, install rbenv in the fooapp user's home directory, install ruby version 3.1.2, create a systemd unit file fooapp.service that will run Puma on port 3001.
 
 ```
-ansible-playbook add_rails_app.yml -e "app=fooapp puma_port=3001 ruby_version=3.1.2 app_domain=myapp.ca"
+ansible-playbook add_rails_app.yml -e "app=fooapp puma_port=3001 ruby_version=3.1.2 app_domain=myapp.ca rails_env=production"
 ```
 
 Once the setup is complete, you can login to the server as user fooapp to create your new Rails app. Your pubkey should have already been added to /home/fooapp/.ssh/authorized_keys.
