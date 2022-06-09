@@ -118,20 +118,6 @@
     become: yes
     become_user: "{{ app }}"
 
-  - name: Enable the Apache2 mod_rewrite
-    community.general.apache2_module:
-      state: present
-      name: rewrite
-      ignore_configcheck: yes
-    notify: restart apache2
-
-  - name: Enable the Apache2 mod_headers
-    community.general.apache2_module:
-      state: present
-      name: headers
-      ignore_configcheck: yes
-    notify: restart apache2
-
   - name: set RAILS_ENV in /home/{{ app }}/.profile
     lineinfile:
       dest: /home/{{ app }}/.profile
