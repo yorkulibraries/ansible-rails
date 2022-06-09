@@ -28,6 +28,12 @@ Suppose you have prepared your server to run the new Rails app as above, and you
 ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=mysqlhost" --limit targethost
 ```
 
+If you want to install/setup MySQL server on the same machine as the Rails app, then you can specify mysql_host=localhost.
+```
+ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=localhost mysql_root_password=db_root_password" --limit targethost
+```
+
+
 ### Update an existing Rails app 
 Assuming you have deployed an app **fooapp** using the above method, and the git branch used is **master**.
 
