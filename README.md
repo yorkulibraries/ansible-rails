@@ -22,10 +22,10 @@ Now your server is setup and ready for you to run your Rails application on it.
 
 ### Install a Rails app from git repo
 
-Suppose you have prepared your server to run the new Rails app as above, and you have created a blank MySQL database for the app already. You can install the new app using the following playbook.
+Suppose you have prepared your server to run the new Rails app as above, and you have created a blank MySQL database **fooapp** on your MySQL database server **mysqlhost** for the app already. You can install the new app using the following playbook.
 
 ```
-ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=mysqlhost mysql_port=3306" --limit targethost
+ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=mysqlhost" --limit targethost
 ```
 
 ### Update an existing Rails app 
