@@ -4,15 +4,6 @@
   become: yes
   gather_facts: yes
 
-
-  vars_prompt:
-    - name: "githubuser"
-      prompt: "Enter your github username"
-      private: no
-    - name: "githubpass"
-      prompt: "Enter your github personal access token"
-      private: yes
-
   tasks:
 
   - block:
@@ -24,12 +15,9 @@
       changed_when: false
 
     - name: update (git pull) app from git repo
-      expect:
+      shell: 'git pull'
+      args:
         chdir: '/home/{{ app }}/{{ app }}'
-        command: 'git pull'
-        responses:
-          Username: "{{ githubuser }}"
-          Password: "{{ githubpass }}"
       register: git_pull
       when: app_branch.stdout == repo_branch|default('master')
       changed_when: git_pull.stdout != 'Already up to date.'
