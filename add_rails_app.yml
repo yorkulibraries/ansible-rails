@@ -64,7 +64,7 @@
     user: name={{ app }}
       groups=sudo
       append=yes
-    when: not rails_env == 'production'
+    when: rails_env == 'development'
 
   - name: copy /etc/skel/.bash_aliases to user home directory
     copy:
