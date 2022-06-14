@@ -60,6 +60,12 @@
       home: "/home/{{ app }}"
       state: present
 
+  - name: Adding user {{ app }} to group "sudo"
+    user: name={{ app }}
+      groups=sudo
+      append=yes
+    when: not rails_env == 'production'
+
   - name: copy /etc/skel/.bash_aliases to user home directory
     copy:
       src: /etc/skel/.bash_aliases
