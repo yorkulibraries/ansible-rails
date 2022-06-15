@@ -35,6 +35,11 @@
         version: master
       when: rails_env == 'production' and not app_secrets_yml.stat.exists
 
+    - name: gem update --system
+      shell: /home/{{ app }}/.rbenv/shims/gem update --system
+      register: gem_update_system
+      changed_when: gem_update_system.stdout is not search('Latest version already installed. Done.')
+
     - name: gem install bundler
       shell: /home/{{ app }}/.rbenv/shims/gem install bundler 
       register: gem_install_bundler
