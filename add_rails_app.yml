@@ -213,6 +213,15 @@
       group: root
       force: yes
 
+  - name: create mailcatcher systemd unit file
+    template:
+      src: etc/systemd/system/mailcatcher.service
+      dest: "/etc/systemd/system/mailcatcher.service"
+      owner: root
+      group: root
+      force: yes
+    when: rails_env == "development"
+
   handlers:
   - name: restart apache2
     systemd:

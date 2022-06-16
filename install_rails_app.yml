@@ -45,6 +45,12 @@
       register: gem_install_bundler
       changed_when: gem_install_bundler.stdout is search('Fetching')
 
+    - name: gem install mailcatcher
+      shell: /home/{{ app }}/.rbenv/shims/gem install mailcatcher
+      register: gem_install_mailcatcher
+      changed_when: gem_install_mailcatcher.stdout is search('Fetching')
+      when: rails_env == 'development'
+
     - name: bundle install --without development test
       shell: /home/{{ app }}/.rbenv/shims/bundle install --without development test
       args:
@@ -135,6 +141,14 @@
       name: "{{ app }}"
       enabled: yes
       masked: no
+
+  - name: enable mailcatcher service on boot
+    systemd:
+      name: mailcatcher
+      enabled: yes
+      masked: no
+      state: started
+    when: rails_env == "development"
 
 
   handlers:

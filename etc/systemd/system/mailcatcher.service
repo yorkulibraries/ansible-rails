@@ -1,0 +1,29 @@
+[Unit]
+Description=MailCatcher for {{ app }} Server
+After=multi-user.target
+
+[Service]
+# Foreground process (do not use --daemon in ExecStart or config.rb)
+Type=idle
+
+# Preferably configure a non-privileged user
+User={{ app }}
+
+# The path to the your application code root directory
+WorkingDirectory=/home/{{ app }}/{{ app }}
+
+# The command to start MailCatcher
+ExecStart=/home/{{ app }}/.rbenv/shims/ruby ./bin/mailcatcher  --http-ip 0.0.0.0 -f
+
+# The command to stop MailCatcher
+ExecStop=kill $MAINPID
+
+# Should systemd restart mailcatcher?
+# Use "no" (the default) to ensure no interference when using
+# stop/start/restart via `pumactl`.  The "on-failure" setting might
+# work better for this purpose, but you must test it.
+# Use "always" if only `systemctl` is used for start/stop/restart, and
+# reconsider if you actually need the forking config.
+Restart=always
+RestartSec=15
+
