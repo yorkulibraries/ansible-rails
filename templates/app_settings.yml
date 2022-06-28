@@ -1,0 +1,10 @@
+development:
+  mail:
+    from_name: "{{ app }}"
+    from_email: "noreply@{{ app }}"
+
+production:
+  mail:
+    from_name: "{{ app }}"
+    from_email: "noreply@{{ app }}"
+

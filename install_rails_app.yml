@@ -74,6 +74,11 @@
         src: templates/database.yml
         dest: "/home/{{ app }}/{{ app }}/config/database.yml"
 
+    - name: create app_settings.yml
+      template:
+        src: templates/app_settings.yml
+        dest: "/home/{{ app }}/{{ app }}/config/app_settings.yml"
+
     - name: rake db:migrate
       shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:migrate
       args:
