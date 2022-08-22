@@ -79,31 +79,7 @@
         src: templates/app_settings.yml
         dest: "/home/{{ app }}/{{ app }}/config/app_settings.yml"
 
-    - name: rake db:migrate
-      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:migrate
-      args:
-        chdir: /home/{{ app }}/{{ app }}
-      register: rake_db_migrate
-      when: not app_secrets_yml.stat.exists or (rails_env == 'development' or rails_env == 'test')
-      notify: restart app
-
-    - name: rake db:seed
-      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:seed
-      args:
-        chdir: /home/{{ app }}/{{ app }}
-      register: rake_db_seed
-      when: not app_secrets_yml.stat.exists or (rails_env == 'development' or rails_env == 'test')
-      notify: restart app
-
-    - name: rake assets:precompile
-      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake assets:precompile
-      args:
-        chdir: /home/{{ app }}/{{ app }}
-      register: rake_assets_precompile
-      notify: restart app
-    - debug: var=rake_assets_precompile.stderr_lines
-
-    - name: RAILS_ENV=development rake secret 
+    - name: RAILS_ENV=development rake secret
       shell: RAILS_ENV=development /home/{{ app }}/.rbenv/shims/bundle exec rake secret
       args:
         chdir: /home/{{ app }}/{{ app }}
@@ -129,7 +105,31 @@
         src: templates/secrets.yml
         dest: "/home/{{ app }}/{{ app }}/config/secrets.yml"
       when: not app_secrets_yml.stat.exists
-      notify: start app
+
+    - name: rake db:migrate
+      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:migrate
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_db_migrate
+      when: not app_secrets_yml.stat.exists or (rails_env == 'development' or rails_env == 'test')
+      notify: restart app
+
+    - name: rake db:seed
+      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake db:seed
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_db_seed
+      when: not app_secrets_yml.stat.exists or (rails_env == 'development' or rails_env == 'test')
+      notify: restart app
+
+    - name: rake assets:precompile
+      shell: RAILS_ENV={{ rails_env|default('development') }} /home/{{ app }}/.rbenv/shims/bundle exec rake assets:precompile
+      args:
+        chdir: /home/{{ app }}/{{ app }}
+      register: rake_assets_precompile
+      notify: restart app
+    - debug: var=rake_assets_precompile.stderr_lines
+
 
     become: yes
     become_user: "{{ app }}"
