@@ -168,14 +168,6 @@
       group: root
       force: yes
 
-  - name: create apache conf /etc/apache2/sites-available/{{ app }}.{{ app_domain }}-ssl.conf
-    template:
-      src: etc/apache2/sites-available/rails_app_template-ssl.conf
-      dest: "/etc/apache2/sites-available/{{ app }}.{{ app_domain }}-ssl.conf"
-      owner: root
-      group: root
-      force: yes
-
   - name: enable mod_proxy_http
     community.general.apache2_module:
       state: present
