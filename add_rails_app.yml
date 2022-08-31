@@ -68,8 +68,7 @@
 
   - name: copy /etc/skel/.bash_aliases to user home directory
     copy:
-      src: /etc/skel/.bash_aliases
-      remote_src: yes
+      src: etc/skel/.bash_aliases
       dest: "/home/{{ app }}"
       owner: "{{ app }}"
       group: "{{ app }}"
