@@ -159,10 +159,10 @@
     become_user: "{{ app }}"
     
 
-  - name: create apache conf /etc/apache2/sites-available/{{ app }}.{{ app_domain }}.conf
+  - name: create apache conf /etc/apache2/sites-available/{{ vhost }}.conf
     template:
       src: etc/apache2/sites-available/rails_app_template.conf
-      dest: "/etc/apache2/sites-available/{{ app }}.{{ app_domain }}.conf"
+      dest: "/etc/apache2/sites-available/{{ vhost }}.conf"
       owner: root
       group: root
       force: yes
@@ -189,8 +189,8 @@
 
   - name: enable apache site
     file:
-      src: "/etc/apache2/sites-available/{{ app }}.{{ app_domain }}.conf"
-      dest: "/etc/apache2/sites-enabled/{{ app }}.{{ app_domain }}.conf"
+      src: "/etc/apache2/sites-available/{{ vhost }}.conf"
+      dest: "/etc/apache2/sites-enabled/{{ vhost }}.conf"
       owner: root
       group: root
       state: link
