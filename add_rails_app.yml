@@ -187,6 +187,14 @@
       ignore_configcheck: yes
     notify: restart apache2
 
+  - name: create DocumentRoot for {{ vhost }}
+    file:
+      path: "/var/www/{{ vhost }}"
+      owner: root
+      group: root
+      state: directory
+      mode: '0755'
+
   - name: enable apache site
     file:
       src: "/etc/apache2/sites-available/{{ vhost }}.conf"
