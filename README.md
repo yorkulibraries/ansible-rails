@@ -49,5 +49,5 @@ ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=
 Assuming you have deployed an app **fooapp** using the above method, and the git branch used is **master**.
 
 ```
-ansible-playbook -i inventory update_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master" --limit targethost
+ansible-playbook -i inventory update_rails_app.yml -e"rails_env=production app=fooapp" --limit targethost
 ```
