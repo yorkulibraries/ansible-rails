@@ -7,7 +7,7 @@
     - vars/mysql.yml
   roles:
     - role: geerlingguy.mysql
-      when: rails_env == 'production' and mysql_host == 'localhost'
+      when: use_local_mysql and mysql_host == 'localhost'
       mysql_databases:
         - name: "{{ mysql_database|default(app) }}"
           encoding: utf8

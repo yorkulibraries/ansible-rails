@@ -10,9 +10,21 @@ default: &default
   timeout: 5000
 
 development:
+{% if use_mysql_in_development and use_local_mysql %}
+  adapter: mysql2
+  encoding: utf8
+  reconnect: false
+  database: {{ mysql_database|default(app) }}
+  pool: {{ mysql_pool|default(5) }}
+  username: {{ mysql_username|default(app) }}
+  password: {{ mysql_password|default(app) }}
+  host: {{ mysql_host|default('localhost') }}
+  port: {{ mysql_port|default(3306) }}
+{% else %}
   <<: *default
   database: db/development.sqlite3
-
+{% endif %}
+  
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
@@ -25,8 +37,8 @@ production:
   encoding: utf8
   reconnect: false
   database: {{ mysql_database|default(app) }}
-  pool: {{ mysql_pool|default(5) }} 
+  pool: {{ mysql_pool|default(5) }}
   username: {{ mysql_username|default(app) }}
   password: {{ mysql_password|default(app) }}
   host: {{ mysql_host|default('localhost') }}
-  port: {{ mysql_port|default(3306) }} 
+  port: {{ mysql_port|default(3306) }}
