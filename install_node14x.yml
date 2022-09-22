@@ -17,5 +17,6 @@
 
   - name: install nodejs
     apt:
+      update_cache: yes
       pkg:
       - nodejs
