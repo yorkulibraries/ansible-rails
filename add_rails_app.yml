@@ -70,11 +70,24 @@
       home: "/home/{{ app }}"
       state: present
 
+  - name: set home directory owner
+    file:
+      path: "/home/{{ app }}"
+      owner: "{{ app }}"
+      group: "{{ app }}"
+
   - name: Adding user {{ app }} to group "sudo"
     user: name={{ app }}
       groups=sudo
       append=yes
     when: rails_env == 'development'
+
+  - name: Adding user {{ app }} to group "vagrant"
+    user: name={{ app }}
+      groups=vagrant
+      append=yes
+    when: rails_env == 'development'
+    failed_when: false
 
   - name: copy /etc/skel/.bash_aliases to user home directory
     copy:
@@ -85,7 +98,6 @@
       force: no
 
   - block:
-
     - name: add SSH pubkeys
       authorized_key:
         user: "{{ app }}"
@@ -106,12 +118,14 @@
         path: /home/{{ app }}/.profile
         line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
         state: present
+        create: yes
 
     - name: setup rbenv command for the user "{{ app }}"
       lineinfile:
         path: /home/{{ app }}/.profile
         line: 'eval "$(rbenv init -)"'
         state: present
+        create: yes
 
     - name: create ~/.gemrc for user "{{ app }}"
       lineinfile:
