@@ -6,15 +6,15 @@
 
   tasks:
 
-  - name: add yarn repo key
-    apt_key:
-      url: https://dl.yarnpkg.com/debian/pubkey.gpg
-      state: present
+#  - name: add yarn repo key
+#    apt_key:
+#      url: https://dl.yarnpkg.com/debian/pubkey.gpg
+#      state: present
 
-  - name: Add yarn repository into sources list
-    apt_repository:
-      repo: deb https://dl.yarnpkg.com/debian/ stable main
-      state: present
+#  - name: Add yarn repository into sources list
+#    apt_repository:
+#      repo: deb https://dl.yarnpkg.com/debian/ stable main
+#      state: present
 
   - name: add nodesource repo key
     apt_key:
@@ -49,7 +49,7 @@
       - mysql-client
       - libsqlite3-dev
       - nodejs
-      - yarn
+#      - yarn
       - python-pexpect
 
 
@@ -109,8 +109,16 @@
         path: /home/{{ app }}/.rbenv/bin/rbenv
       register: rbenv
 
+    - name: clone rbenv-installer
+      git:
+        repo: "https://github.com/rbenv/rbenv-installer.git"
+        dest: /home/{{ app }}/rbenv-installer
+        single_branch: yes
+        version: main
+      when: rbenv.stat.exists == False
+
     - name: install rbenv
-      shell: "curl -fsSL https://github.com/rbenv/rbenv-installer/raw/HEAD/bin/rbenv-installer | bash"
+      shell: "cat /home/{{ app }}/rbenv-installer/bin/rbenv-installer | bash"
       when: rbenv.stat.exists == False
 
     - name: setup rbenv PATH for the user "{{ app }}"
