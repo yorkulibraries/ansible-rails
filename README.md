@@ -24,7 +24,7 @@ This example shows how to create a new Rails application using Rbenv, Puma and s
 The add_rails_app.yml playbook will create a user fooapp with uid/gid: 3001, install rbenv in the fooapp user's home directory, install ruby version 3.1.2, create a systemd unit file fooapp.service that will run Puma on port 3001.
 
 ```
-ansible-playbook -i inventory add_rails_app.yml -e "rails_env=production app=fooapp puma_port=3001 ruby_version=3.1.2 app_domain=myapp.ca" --limit targethost
+ansible-playbook --ask-vault-pass -i inventory add_rails_app.yml -e "rails_env=production app=fooapp puma_port=3001 ruby_version=3.1.2 app_domain=myapp.ca" --limit targethost
 ```
 
 Once the setup is complete, you can login to the server as user fooapp to create your new Rails app. Your pubkey should have already been added to /home/fooapp/.ssh/authorized_keys.
@@ -36,12 +36,12 @@ Now your server is setup and ready for you to run your Rails application on it.
 Suppose you have prepared your server to run the new Rails app as above, and you have created a blank MySQL database **fooapp** on your MySQL database server **mysqlhost** for the app already. You can install the new app using the following playbook.
 
 ```
-ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=mysqlhost" --limit targethost
+ansible-playbook --ask-vault-pass -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=mysqlhost" --limit targethost
 ```
 
 If you want to install/setup MySQL server on the same machine as the Rails app, then you can specify mysql_host=localhost.
 ```
-ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=localhost mysql_root_password=db_root_password" --limit targethost
+ansible-playbook --ask-vault-pass -i inventory install_rails_app.yml -e"rails_env=production app=fooapp repo_branch=master repo=https://github.com/yorkulibraries/fooapp.git mysql_database=fooapp mysql_username=fooapp mysql_password=fooapp mysql_host=localhost mysql_root_password=db_root_password" --limit targethost
 ```
 
 
@@ -49,5 +49,5 @@ ansible-playbook -i inventory install_rails_app.yml -e"rails_env=production app=
 Assuming you have deployed an app **fooapp** using the above method, and the git branch used is **master**.
 
 ```
-ansible-playbook -i inventory update_rails_app.yml -e"rails_env=production app=fooapp" --limit targethost
+ansible-playbook --ask-vault-pass -i inventory update_rails_app.yml -e"rails_env=production app=fooapp" --limit targethost
 ```
