@@ -87,6 +87,13 @@
       force: no
 
   - block:
+    - name: create app specific "/home/{{ app }}/.{{ app }}" environment file
+      template:
+        src: templates/.env
+        dest: "/home/{{ app }}/.{{ app }}"
+        owner: "{{ app }}"
+        group: "{{ app }}"
+
     - name: add SSH pubkeys
       authorized_key:
         user: "{{ app }}"
@@ -242,13 +249,13 @@
       force: yes
     when: rails_env == "development"
 
-  - name: create /home/{{ app }}/.env environment file
-    template:
-      src: templates/.env
-      dest: "/home/{{ app }}/.env"
-      owner: "{{ app }}"
-      group: "{{ app }}"
-      force: yes
+  - name: add block to source and export variables from "/home/{{ app }}/.{{ app }}" to "/home/{{ app }}/.profile"
+    ansible.builtin.blockinfile:
+      path: "/home/{{ app }}/.profile"
+      block: |
+        set -o allexport
+        . /home/{{ app }}/.{{ app }}
+        set +o allexport
 
   handlers:
   - name: restart apache2
