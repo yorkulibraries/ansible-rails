@@ -12,7 +12,8 @@ User={{ app }}
 # The path to the your application code root directory
 WorkingDirectory=/home/{{ app }}/{{ app }}
 
-Environment=RAILS_ENV={{ rails_env | default('production') }} PORT={{ puma_port }} RAILS_SERVE_STATIC_FILES=true
+# Load environment variable from file
+EnvironmentFile=/home/{{ app }}/.{{ app }}
 
 # create pids dir
 ExecStartPre=-/bin/mkdir -p /home/{{ app }}/{{ app }}/tmp/pids 

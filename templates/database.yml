@@ -1,44 +1,16 @@
-# SQLite version 3.x
-#   gem install sqlite3
-#
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem 'sqlite3'
-#
 default: &default
-  adapter: sqlite3
+  encoding: utf8
+  adapter: <%= ENV["DB_ADAPTER"] || "mysql2" %>
+  url: <%= ENV["DATABASE_URL"] %>
+  reconnect: true
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  timeout: 5000
+  timeout: 10000
 
 development:
-{% if use_mysql_in_development and use_local_mysql %}
-  adapter: mysql2
-  encoding: utf8
-  reconnect: false
-  database: {{ mysql_database|default(app) }}
-  pool: {{ mysql_pool|default(5) }}
-  username: {{ mysql_username|default(app) }}
-  password: {{ mysql_password|default(app) }}
-  host: {{ mysql_host|default('localhost') }}
-  port: {{ mysql_port|default(3306) }}
-{% else %}
   <<: *default
-  database: db/development.sqlite3
-{% endif %}
-  
-# Warning: The database defined as "test" will be erased and
-# re-generated from your development database when you run "rake".
-# Do not set this db to the same as development or production.
+
 test:
   <<: *default
-  database: db/test.sqlite3
 
 production:
-  adapter: mysql2
-  encoding: utf8
-  reconnect: false
-  database: {{ mysql_database|default(app) }}
-  pool: {{ mysql_pool|default(5) }}
-  username: {{ mysql_username|default(app) }}
-  password: {{ mysql_password|default(app) }}
-  host: {{ mysql_host|default('localhost') }}
-  port: {{ mysql_port|default(3306) }}
+  <<: *default

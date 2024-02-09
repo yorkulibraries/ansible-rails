@@ -6,16 +6,6 @@
 
   tasks:
 
-#  - name: add yarn repo key
-#    apt_key:
-#      url: https://dl.yarnpkg.com/debian/pubkey.gpg
-#      state: present
-
-#  - name: Add yarn repository into sources list
-#    apt_repository:
-#      repo: deb https://dl.yarnpkg.com/debian/ stable main
-#      state: present
-
   - name: add nodesource repo key
     apt_key:
       url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
@@ -49,7 +39,6 @@
       - mysql-client
       - libsqlite3-dev
       - nodejs
-#      - yarn
       - python-pexpect
 
 
@@ -252,6 +241,14 @@
       group: root
       force: yes
     when: rails_env == "development"
+
+  - name: create /home/{{ app }}/.env environment file
+    template:
+      src: templates/.env
+      dest: "/home/{{ app }}/.env"
+      owner: "{{ app }}"
+      group: "{{ app }}"
+      force: yes
 
   handlers:
   - name: restart apache2
