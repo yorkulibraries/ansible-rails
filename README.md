@@ -25,6 +25,7 @@ The add_rails_app.yml playbook will create a user fooapp with uid/gid: 3001, ins
 
 ```
 ansible-playbook --ask-vault-pass add_rails_app.yml -e "rails_env=production app=fooapp puma_port=3001 ruby_version=3.1.4 vhost=fooapp.library.yorku.ca" --limit targethost```
+```
 
 Once the setup is complete, you can login to the server as user fooapp to create your new Rails app. Your pubkey should have already been added to /home/fooapp/.ssh/authorized_keys.
 
